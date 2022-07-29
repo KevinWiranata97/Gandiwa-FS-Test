@@ -24,8 +24,12 @@ class Controller {
       const newUser = await User.query().insert(data);
       res.status(201).json(newUser);
     } catch (error) {
-    
-      res.status(500).json("Internal Server Error");
+      if(error.name === "UniqueViolationError"){
+        res.status(400).json({ message: "Email already exist" });
+      }else{
+        res.status(500).json("Internal Server Error");
+      }
+     
     }
   }
 
@@ -95,7 +99,7 @@ class Controller {
       });
     } catch (error) {
       if (error.name === "Unauthorized") {
-        res.status(403).json({ message: "Invalid email or password" });
+        res.status(401).json({ message: "Invalid email or password" });
       }else{
         res.status(500).json({ message: "internal server error" });
       }

@@ -1,4 +1,4 @@
-const  User  = require("../models/user");
+const User = require("../models/user");
 const { verifyToken } = require("../helpers/jwt");
 
 async function authentication(req, res, next) {
@@ -6,9 +6,7 @@ async function authentication(req, res, next) {
     const { access_token } = req.headers;
     if (!access_token) {
       throw {
-        name: "invalid",
-        code: "401",
-        msg: `Invalid email or password`,
+        name: "Unauthorized",
       };
     }
 
@@ -19,9 +17,7 @@ async function authentication(req, res, next) {
 
     if (!findUser) {
       throw {
-        name: "invalid",
-        code: "401",
-        msg: `Invalid email or password`,
+        name: "Unauthorized",
       };
     }
 
@@ -34,8 +30,11 @@ async function authentication(req, res, next) {
 
     next();
   } catch (error) {
-    console.log(error);
-   
+    if (error.name === "Unauthorized") {
+      res.status(401).json({ message: "Invalid email or password" });
+    } else {
+      res.status(500).json({ message: "internal server error" });
+    }
   }
 }
 
