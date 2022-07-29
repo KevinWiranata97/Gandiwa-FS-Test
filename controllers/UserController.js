@@ -33,8 +33,26 @@ class Controller {
       const user = await User.query().findById(id);
       res.status(200).json(user);
     } catch (error) {
-        console.log(error);
+      console.log(error);
       res.status(500).json("Internal Server Error");
+    }
+  }
+
+  static async deleteUser(req, res, next) {
+    try {
+      const { id } = req.params;
+      const findUser = await User.query().findById(id);
+      if (!findUser) {
+        throw { name: "Not Found" };
+      }
+     
+      await User.query().deleteById(id);
+      res.status(200).json(`success delete users with id ${id}`);
+    } catch (error) {
+      if (error.name === "Not Found") {
+        res.status(404).json({ message: '"Data not found"' });
+      }
+      res.status(500).json({ message: "internal server error" });
     }
   }
 }
