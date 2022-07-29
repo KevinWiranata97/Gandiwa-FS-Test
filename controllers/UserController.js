@@ -24,6 +24,7 @@ class Controller {
       const newUser = await User.query().insert(data);
       res.status(201).json(newUser);
     } catch (error) {
+    
       res.status(500).json("Internal Server Error");
     }
   }
@@ -64,7 +65,7 @@ class Controller {
       let findUser = await User.query().findOne({
         email,
       });
-
+;
       if (!findUser) {
         throw {
           name: "Unauthorized",
@@ -72,6 +73,7 @@ class Controller {
       }
 
       const checkPassword = comparePassword(password, findUser.password);
+
       if (!checkPassword) {
         throw {
           name: "Unauthorized",
