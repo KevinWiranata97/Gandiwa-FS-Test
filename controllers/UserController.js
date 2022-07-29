@@ -1,5 +1,6 @@
 const User = require("../models/user");
-
+const { comparePassword } = require("../helpers/bcrypt");
+const { generateToken } = require("../helpers/jwt");
 class Controller {
   static async getUser(req, res, next) {
     try {
@@ -45,7 +46,7 @@ class Controller {
       if (!findUser) {
         throw { name: "Not Found" };
       }
-     
+
       await User.query().deleteById(id);
       res.status(200).json(`success delete users with id ${id}`);
     } catch (error) {
@@ -53,6 +54,50 @@ class Controller {
         res.status(404).json({ message: '"Data not found"' });
       }
       res.status(500).json({ message: "internal server error" });
+    }
+  }
+
+  static async login(req, res, next) {
+    try {
+      const { email, password } = req.body;
+
+      let findUser = await User.query().findOne({
+        email,
+      });
+
+      if (!findUser) {
+        throw {
+          name: "Unauthorized",
+        };
+      }
+
+      const checkPassword = comparePassword(password, findUser.password);
+      if (!checkPassword) {
+        throw {
+          name: "Unauthorized",
+        };
+      }
+
+      const payload = {
+        id: findUser.id,
+        email: findUser.email,
+      };
+
+      const access_token = generateToken(payload);
+
+      res.status(200).json({
+        id: findUser.id,
+        role: findUser.role,
+        access_token: access_token,
+        email: findUser.email,
+      });
+    } catch (error) {
+      if (error.name === "Unauthorized") {
+        res.status(403).json({ message: "Invalid email or password" });
+      }else{
+        res.status(500).json({ message: "internal server error" });
+      }
+   
     }
   }
 }
